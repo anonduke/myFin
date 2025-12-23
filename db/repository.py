@@ -109,6 +109,42 @@ class Repository:
                 (format_date(last_payment_date), debt_id),
             )
 
+    def update_debt(self, debt: Debt) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                UPDATE debts SET
+                    lender_name = ?,
+                    debt_type = ?,
+                    original_currency = ?,
+                    principal_original = ?,
+                    principal_outstanding_cad = ?,
+                    interest_rate_annual = ?,
+                    penal_rate_annual = ?,
+                    loan_start_date = ?,
+                    installment_amount = ?,
+                    installment_due_day = ?,
+                    last_payment_date = ?,
+                    status = ?
+                WHERE id = ?
+                """,
+                (
+                    debt.lender_name,
+                    debt.debt_type,
+                    debt.original_currency,
+                    debt.principal_original,
+                    debt.principal_outstanding_cad,
+                    debt.interest_rate_annual,
+                    debt.penal_rate_annual,
+                    format_date(debt.loan_start_date),
+                    debt.installment_amount,
+                    debt.installment_due_day,
+                    format_date(debt.last_payment_date) if debt.last_payment_date else None,
+                    debt.status,
+                    debt.id,
+                ),
+            )
+
     def add_credit_card(self, card: CreditCard) -> int:
         with self._connect() as conn:
             cursor = conn.execute(
@@ -170,6 +206,38 @@ class Repository:
             conn.execute(
                 "UPDATE credit_cards SET last_payment_date = ? WHERE id = ?",
                 (format_date(last_payment_date), card_id),
+            )
+
+    def update_credit_card(self, card: CreditCard) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                UPDATE credit_cards SET
+                    bank_name = ?,
+                    card_name = ?,
+                    credit_limit_cad = ?,
+                    statement_balance_cad = ?,
+                    interest_rate_annual = ?,
+                    statement_date = ?,
+                    due_date = ?,
+                    last_payment_date = ?,
+                    flat_late_fee_cad = ?,
+                    status = ?
+                WHERE id = ?
+                """,
+                (
+                    card.bank_name,
+                    card.card_name,
+                    card.credit_limit_cad,
+                    card.statement_balance_cad,
+                    card.interest_rate_annual,
+                    format_date(card.statement_date),
+                    format_date(card.due_date),
+                    format_date(card.last_payment_date) if card.last_payment_date else None,
+                    card.flat_late_fee_cad,
+                    card.status,
+                    card.id,
+                ),
             )
 
     def add_payment(
@@ -260,6 +328,24 @@ class Repository:
             )
             for row in rows
         ]
+
+    def update_savings(self, account: SavingsAccount) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                UPDATE savings SET
+                    account_name = ?,
+                    currency = ?,
+                    balance_cad = ?
+                WHERE id = ?
+                """,
+                (
+                    account.account_name,
+                    account.currency,
+                    account.balance_cad,
+                    account.id,
+                ),
+            )
 
     def upsert_fx_rate(self, rate: FxRate) -> None:
         with self._connect() as conn:
